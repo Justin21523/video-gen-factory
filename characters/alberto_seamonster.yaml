@@ -1,0 +1,61 @@
+character:
+  name: Alberto (Sea Monster Form)
+  lora_path: BEST_CHECKPOINTS_COLLECTION/BEST_alberto_seamonster_lora_sdxl.safetensors
+  lora_strength: 0.8
+  reference_images:
+  - /mnt/data/ai_data/synthetic_lora_data/generated_data/alberto_seamonster/action/images/prompt_0000_img_00.png
+  - /mnt/data/ai_data/synthetic_lora_data/generated_data/alberto_seamonster/action/images/prompt_0000_img_01.png
+  - /mnt/data/ai_data/synthetic_lora_data/generated_data/alberto_seamonster/action/images/prompt_0000_img_02.png
+  - /mnt/data/ai_data/synthetic_lora_data/generated_data/alberto_seamonster/action/images/prompt_0000_img_03.png
+  - /mnt/data/ai_data/synthetic_lora_data/generated_data/alberto_seamonster/action/images/prompt_0000_img_04.png
+  - /mnt/data/ai_data/synthetic_lora_data/generated_data/alberto_seamonster/action/images/prompt_0000_img_05.png
+  - /mnt/data/ai_data/synthetic_lora_data/generated_data/alberto_seamonster/action/images/prompt_0000_img_06.png
+  - /mnt/data/ai_data/synthetic_lora_data/generated_data/alberto_seamonster/action/images/prompt_0000_img_07.png
+  - /mnt/data/ai_data/synthetic_lora_data/generated_data/alberto_seamonster/action/images/prompt_0000_img_08.png
+  - /mnt/data/ai_data/synthetic_lora_data/generated_data/alberto_seamonster/action/images/prompt_0000_img_09.png
+  base_description: Alberto Scorfano in sea monster form from Disney Pixar Luca movie,
+    teenage sea monster character, distinctive appearance with teal blue-green scales,
+    purple spots pattern, webbed hands and feet, fish-like tail, bright green eyes,
+    confident expression, Pixar 3D animation style, high detail creature model, masterpiece
+    quality
+  base_negative: blurry, out of focus, distorted, warped, low quality, poor quality,
+    bad quality, worst quality, jpeg artifacts, compression artifacts, bad anatomy,
+    deformed body, deformed face, deformed hands, deformed fingers, extra limbs, missing
+    limbs, bad proportions, inconsistent character appearance, character morphing,
+    face morphing, flickering, temporal inconsistency, frame inconsistency, wrong
+    facial features, different character, wrong clothing, clothing changes, color
+    shifting, wrong face, ugly face, disgusting, poorly drawn, amateur, sketch, unfinished,
+    watermark, signature, text, realistic photo, realistic style, live action, not
+    animated, different art style, anime style, manga style, multiple people, crowd
+  scenes:
+  - id: happy_dancing
+    prompt: dancing happily with joyful expression, energetic movement, smooth fluid
+      motion, vibrant colors, detailed character animation, cinematic lighting, Pixar
+      movie quality
+    negative: static pose, stiff movement, sad expression
+    seed: 123456
+  - id: walking_confident
+    prompt: walking confidently with natural gait, arms swinging naturally, cheerful
+      expression, beautiful background, warm lighting, smooth animation
+    negative: floating, sliding, unnatural movement, stiff body
+    seed: 234567
+  - id: excited_jumping
+    prompt: jumping with excitement and joy, dynamic mid-air pose, biggest smile,
+      energetic composition, vibrant atmosphere, Pixar quality
+    negative: standing still, feet on ground, no motion, neutral face
+    seed: 345678
+  - id: looking_around
+    prompt: looking around curiously with wonder in eyes, gentle head movement, expressive
+      face, beautiful environment, cinematic composition
+    negative: staring blankly, no movement, boring pose
+    seed: 456789
+generation_settings:
+  model: kijai/CogVideoX-5b-1.5-I2V
+  steps: 25
+  cfg: 6.0
+  sampler: CogVideoXDDIM
+  scheduler: CogVideoX
+  width: 1360
+  height: 768
+  frame_rate: 16
+  output_prefix: alberto_seamonster

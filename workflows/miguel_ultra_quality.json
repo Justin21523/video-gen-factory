@@ -1,0 +1,63 @@
+{
+  "1": {
+    "inputs": {
+      "video": "miguel_svd_00001.mp4",
+      "force_rate": 0,
+      "custom_width": 0,
+      "custom_height": 0,
+      "frame_load_cap": 0,
+      "skip_first_frames": 0,
+      "select_every_nth": 1
+    },
+    "class_type": "VHS_LoadVideo",
+    "_meta": {
+      "title": "Load Base Video"
+    }
+  },
+  "2": {
+    "inputs": {
+      "ckpt_name": "rife47.pth",
+      "frames": ["1", 0],
+      "clear_cache_after_n_frames": 10,
+      "multiplier": 10,
+      "fast_mode": false,
+      "ensemble": true,
+      "scale_factor": 1.0
+    },
+    "class_type": "RIFE VFI",
+    "_meta": {
+      "title": "RIFE Ultra: 6fps → 60fps (250 frames)"
+    }
+  },
+  "3": {
+    "inputs": {
+      "width": 2560,
+      "height": 1440,
+      "upscale_method": "bicubic",
+      "crop": "disabled",
+      "image": ["2", 0]
+    },
+    "class_type": "ImageScale",
+    "_meta": {
+      "title": "Upscale to 2560x1440 (2K)"
+    }
+  },
+  "4": {
+    "inputs": {
+      "frame_rate": 60,
+      "loop_count": 0,
+      "filename_prefix": "miguel_ultra",
+      "format": "video/h264-mp4",
+      "pix_fmt": "yuv420p",
+      "crf": 12,
+      "save_metadata": true,
+      "pingpong": false,
+      "save_output": true,
+      "images": ["3", 0]
+    },
+    "class_type": "VHS_VideoCombine",
+    "_meta": {
+      "title": "Save Ultra Quality (60fps, 2K, CRF 12)"
+    }
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "63": {
+    "class_type": "CogVideoSampler",
+    "inputs": {
+      "model": [
+        "59",
+        0
+      ],
+      "positive": [
+        "30",
+        0
+      ],
+      "negative": [
+        "31",
+        0
+      ],
+      "image_cond_latents": [
+        "62",
+        0
+      ],
+      "seed": 123456,
+      "steps": 25,
+      "cfg": 6.0,
+      "denoise_strength": 0,
+      "seed_mode": "fixed",
+      "scheduler": "CogVideoXDDIM",
+      "num_frames": 49
+    }
+  },
+  "62": {
+    "class_type": "CogVideoImageEncode",
+    "inputs": {
+      "vae": [
+        "59",
+        1
+      ],
+      "start_image": [
+        "37",
+        0
+      ],
+      "enable_vae_encode": false,
+      "latent_samples": 0
+    }
+  },
+  "30": {
+    "class_type": "CogVideoTextEncode",
+    "inputs": {
+      "clip": [
+        "20",
+        0
+      ],
+      "prompt": "Miguel Rivera from Disney Pixar Coco movie, dancing happily with guitar, Pixar style",
+      "guidance": 1,
+      "force_offload": false
+    }
+  },
+  "36": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "prompt_0000_img_00.png"
+    }
+  },
+  "20": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "t5xxl_fp8_e4m3fn.safetensors",
+      "type": "sd3"
+    }
+  },
+  "60": {
+    "class_type": "CogVideoDecode",
+    "inputs": {
+      "vae": [
+        "59",
+        1
+      ],
+      "samples": [
+        "63",
+        0
+      ],
+      "enable_vae_tiling": true,
+      "tile_sample_min_height": 240,
+      "tile_sample_min_width": 360,
+      "tile_overlap_factor_height": 0.2,
+      "tile_overlap_factor_width": 0.2,
+      "auto_tile_size": true
+    }
+  },
+  "37": {
+    "class_type": "ImageResizeKJ",
+    "inputs": {
+      "image": [
+        "36",
+        0
+      ],
+      "width": 1360,
+      "height": 768,
+      "interpolation": "lanczos",
+      "keep_proportion": false,
+      "divisible_by": 16,
+      "width_input": 0,
+      "height_input": 0,
+      "upscale_method": "lanczos"
+    }
+  },
+  "31": {
+    "class_type": "CogVideoTextEncode",
+    "inputs": {
+      "clip": [
+        "30",
+        1
+      ],
+      "prompt": "blurry, distorted, low quality, bad anatomy",
+      "guidance": 1,
+      "force_offload": true
+    }
+  },
+  "59": {
+    "class_type": "DownloadAndLoadCogVideoModel",
+    "inputs": {
+      "model": "kijai/CogVideoX-5b-1.5-I2V",
+      "precision": "bf16",
+      "compile": "disabled",
+      "enable_sequential_cpu_offload": false,
+      "attention_mode": "sdpa",
+      "device": "main_device"
+    }
+  },
+  "44": {
+    "class_type": "VHS_VideoCombine",
+    "inputs": {
+      "images": [
+        "60",
+        0
+      ],
+      "frame_rate": 16,
+      "loop_count": 0,
+      "filename_prefix": "miguel_dancing_test",
+      "format": "video/h264-mp4",
+      "pix_fmt": "yuv420p",
+      "crf": 19,
+      "save_metadata": true,
+      "pingpong": false,
+      "save_output": true
+    }
+  }
+}

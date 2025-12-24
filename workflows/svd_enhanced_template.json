@@ -1,0 +1,90 @@
+{
+  "1": {
+    "class_type": "ImageOnlyCheckpointLoader",
+    "inputs": {
+      "ckpt_name": "svd_xt.safetensors"
+    }
+  },
+  "2": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "example.png"
+    }
+  },
+  "3": {
+    "class_type": "SVD_img2vid_Conditioning",
+    "inputs": {
+      "clip_vision": ["1", 1],
+      "init_image": ["2", 0],
+      "vae": ["1", 2],
+      "width": 1024,
+      "height": 576,
+      "video_frames": 25,
+      "motion_bucket_id": 127,
+      "fps": 16,
+      "augmentation_level": 0
+    }
+  },
+  "4": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": ["1", 0],
+      "seed": 123456,
+      "steps": 20,
+      "cfg": 2.5,
+      "sampler_name": "euler",
+      "scheduler": "karras",
+      "positive": ["3", 0],
+      "negative": ["3", 1],
+      "latent_image": ["3", 2],
+      "denoise": 1.0
+    }
+  },
+  "5": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": ["4", 0],
+      "vae": ["1", 2]
+    }
+  },
+  "6": {
+    "class_type": "RIFE VFI",
+    "inputs": {
+      "frames": ["5", 0],
+      "ckpt_name": "rife/rife47.pth",
+      "clear_cache_after_n_frames": 10,
+      "multiplier": 2,
+      "fast_mode": true,
+      "ensemble": true,
+      "scale_factor": 1.0
+    }
+  },
+  "7": {
+    "class_type": "ImageUpscaleWithModel",
+    "inputs": {
+      "upscale_model": ["8", 0],
+      "image": ["6", 0]
+    }
+  },
+  "8": {
+    "class_type": "UpscaleModelLoader",
+    "inputs": {
+      "model_name": "RealESRGAN_x4plus_anime_6B.pth"
+    }
+  },
+  "9": {
+    "class_type": "VHS_VideoCombine",
+    "inputs": {
+      "images": ["7", 0],
+      "frame_rate": 30,
+      "loop_count": 0,
+      "filename_prefix": "svd_enhanced_output",
+      "format": "video/h264-mp4",
+      "pix_fmt": "yuv420p",
+      "crf": 17,
+      "save_metadata": true,
+      "pingpong": false,
+      "save_output": true
+    }
+  }
+}

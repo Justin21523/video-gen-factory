@@ -1,0 +1,229 @@
+{
+  "1": {
+    "inputs": {
+      "ckpt_name": "sd_xl_base_1.0.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": {
+      "title": "Load SDXL Checkpoint"
+    }
+  },
+  "2": {
+    "inputs": {
+      "lora_name": "BEST_miguel_lora_sdxl.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": ["1", 0],
+      "clip": ["1", 1]
+    },
+    "class_type": "LoraLoader",
+    "_meta": {
+      "title": "Miguel Character LoRA"
+    }
+  },
+  "3": {
+    "inputs": {
+      "text": "miguel rivera, young boy, brown eyes, high quality, detailed, vibrant colors, smooth motion, consistent character, cinematic lighting, masterpiece, best quality",
+      "clip": ["2", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Positive Prompt"
+    }
+  },
+  "4": {
+    "inputs": {
+      "text": "low quality, blurry, distorted, deformed, bad anatomy, ugly, flickering, inconsistent, jittery, unstable, noise, artifacts, watermark, text, worst quality, low quality, normal quality, jpeg artifacts, compression",
+      "clip": ["2", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Negative Prompt"
+    }
+  },
+  "5": {
+    "inputs": {
+      "directory": "/mnt/c/ai_projects/video-gen-factory/input_sequences/scene_01_test",
+      "image_load_cap": 90,
+      "skip_first_images": 0,
+      "select_every_nth": 1
+    },
+    "class_type": "VHS_LoadImagesPath",
+    "_meta": {
+      "title": "Load Input Frames"
+    }
+  },
+  "6": {
+    "inputs": {
+      "image": "/mnt/c/ai_tools/comfyui/input/miguel_ref_face.png",
+      "upload": "image"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Miguel Reference"
+    }
+  },
+  "7": {
+    "inputs": {
+      "preset": "PLUS (high strength)",
+      "ipadapter": ["8", 0]
+    },
+    "class_type": "IPAdapterUnifiedLoader",
+    "_meta": {
+      "title": "Load IP-Adapter SDXL"
+    }
+  },
+  "8": {
+    "inputs": {
+      "model_name": "ip-adapter-plus_sdxl_vit-h.safetensors"
+    },
+    "class_type": "IPAdapterModelLoader",
+    "_meta": {
+      "title": "IP-Adapter Model"
+    }
+  },
+  "9": {
+    "inputs": {
+      "weight": 0.8,
+      "weight_type": "linear",
+      "combine_embeds": "concat",
+      "start_at": 0.0,
+      "end_at": 1.0,
+      "embeds_scaling": "V only",
+      "model": ["2", 0],
+      "ipadapter": ["7", 0],
+      "image": ["6", 0]
+    },
+    "class_type": "IPAdapterAdvanced",
+    "_meta": {
+      "title": "Apply IP-Adapter (Character Reference)"
+    }
+  },
+  "10": {
+    "inputs": {
+      "width": 512,
+      "height": 512,
+      "upscale_method": "lanczos",
+      "crop": "center",
+      "image": ["5", 0]
+    },
+    "class_type": "ImageScale",
+    "_meta": {
+      "title": "Resize to 512x512 (AnimateDiff)"
+    }
+  },
+  "11": {
+    "inputs": {
+      "pixels": ["10", 0],
+      "vae": ["1", 2]
+    },
+    "class_type": "VAEEncode",
+    "_meta": {
+      "title": "Encode to Latent"
+    }
+  },
+  "12": {
+    "inputs": {
+      "model_name": "animatediff-sdxl-beta/diffusion_pytorch_model.safetensors"
+    },
+    "class_type": "ADE_LoadAnimateDiffModel",
+    "_meta": {
+      "title": "Load AnimateDiff SDXL"
+    }
+  },
+  "13": {
+    "inputs": {
+      "motion_model": ["12", 0],
+      "start_percent": 0.0,
+      "end_percent": 1.0
+    },
+    "class_type": "ADE_ApplyAnimateDiffModel",
+    "_meta": {
+      "title": "Apply AnimateDiff"
+    }
+  },
+  "14": {
+    "inputs": {
+      "context_length": 16,
+      "context_stride": 1,
+      "context_overlap": 4,
+      "closed_loop": false,
+      "fuse_method": "flat"
+    },
+    "class_type": "ADE_StandardUniformContextOptions",
+    "_meta": {
+      "title": "Context (16 frames, 4 overlap)"
+    }
+  },
+  "15": {
+    "inputs": {
+      "model": ["9", 0],
+      "beta_schedule": "sqrt_linear (AnimateDiff)",
+      "m_models": ["13", 0],
+      "context_options": ["14", 0]
+    },
+    "class_type": "ADE_UseEvolvedSampling",
+    "_meta": {
+      "title": "Evolved Sampling (Temporal)"
+    }
+  },
+  "16": {
+    "inputs": {
+      "seed": 42,
+      "steps": 30,
+      "cfg": 7.5,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 0.55,
+      "model": ["15", 0],
+      "positive": ["3", 0],
+      "negative": ["4", 0],
+      "latent_image": ["11", 0]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler (30 steps)"
+    }
+  },
+  "17": {
+    "inputs": {
+      "samples": ["16", 0],
+      "vae": ["1", 2]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "Decode"
+    }
+  },
+  "18": {
+    "inputs": {
+      "width": 768,
+      "height": 432,
+      "upscale_method": "lanczos",
+      "crop": "disabled",
+      "image": ["17", 0]
+    },
+    "class_type": "ImageScale",
+    "_meta": {
+      "title": "Upscale to 768x432"
+    }
+  },
+  "19": {
+    "inputs": {
+      "frame_rate": 30,
+      "loop_count": 0,
+      "filename_prefix": "miguel_complete",
+      "format": "video/h264-mp4",
+      "pix_fmt": "yuv420p",
+      "crf": 18,
+      "save_metadata": true,
+      "pingpong": false,
+      "save_output": true,
+      "images": ["18", 0]
+    },
+    "class_type": "VHS_VideoCombine",
+    "_meta": {
+      "title": "Save Video"
+    }
+  }
+}

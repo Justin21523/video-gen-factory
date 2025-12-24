@@ -1,0 +1,4 @@
+input_sequences/
+reference_images/
+output_videos/
+LLM_PROVIDER.md

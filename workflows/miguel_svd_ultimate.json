@@ -1,0 +1,125 @@
+{
+  "1": {
+    "inputs": {
+      "image": "miguel_ref_face.png",
+      "upload": "image"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Miguel Reference"
+    }
+  },
+  "2": {
+    "inputs": {
+      "width": 1024,
+      "height": 576,
+      "upscale_method": "lanczos",
+      "crop": "center",
+      "image": ["1", 0]
+    },
+    "class_type": "ImageScale",
+    "_meta": {
+      "title": "Resize 1024x576"
+    }
+  },
+  "3": {
+    "inputs": {
+      "ckpt_name": "svd_xt.safetensors"
+    },
+    "class_type": "ImageOnlyCheckpointLoader",
+    "_meta": {
+      "title": "Load SVD XT"
+    }
+  },
+  "4": {
+    "inputs": {
+      "width": 1024,
+      "height": 576,
+      "video_frames": 72,
+      "motion_bucket_id": 127,
+      "fps": 6,
+      "augmentation_level": 0.0,
+      "clip_vision": ["3", 1],
+      "init_image": ["2", 0],
+      "vae": ["3", 2]
+    },
+    "class_type": "SVD_img2vid_Conditioning",
+    "_meta": {
+      "title": "SVD: 72 frames, 12s @ 6fps"
+    }
+  },
+  "5": {
+    "inputs": {
+      "seed": 999888777,
+      "steps": 30,
+      "cfg": 3.0,
+      "sampler_name": "euler",
+      "scheduler": "karras",
+      "denoise": 1.0,
+      "model": ["3", 0],
+      "positive": ["4", 0],
+      "negative": ["4", 1],
+      "latent_image": ["4", 2]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler HQ"
+    }
+  },
+  "6": {
+    "inputs": {
+      "samples": ["5", 0],
+      "vae": ["3", 2]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "7": {
+    "inputs": {
+      "ckpt_name": "rife47.pth",
+      "frames": ["6", 0],
+      "clear_cache_after_n_frames": 10,
+      "multiplier": 5,
+      "fast_mode": true,
+      "ensemble": true,
+      "scale_factor": 1.0
+    },
+    "class_type": "RIFE VFI",
+    "_meta": {
+      "title": "RIFE: 6fps → 30fps (360 frames)"
+    }
+  },
+  "8": {
+    "inputs": {
+      "width": 1920,
+      "height": 1080,
+      "upscale_method": "lanczos",
+      "crop": "disabled",
+      "image": ["7", 0]
+    },
+    "class_type": "ImageScale",
+    "_meta": {
+      "title": "Upscale to 1920x1080 Full HD"
+    }
+  },
+  "9": {
+    "inputs": {
+      "frame_rate": 30,
+      "loop_count": 0,
+      "filename_prefix": "miguel_ultimate",
+      "format": "video/h264-mp4",
+      "pix_fmt": "yuv420p",
+      "crf": 18,
+      "save_metadata": true,
+      "pingpong": false,
+      "save_output": true,
+      "images": ["8", 0]
+    },
+    "class_type": "VHS_VideoCombine",
+    "_meta": {
+      "title": "Save Ultimate Video (30fps, 1080p)"
+    }
+  }
+}

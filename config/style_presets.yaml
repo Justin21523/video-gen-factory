@@ -1,0 +1,498 @@
+# 风格参数配置文件
+# 针对 RTX 5080 (16GB VRAM) + ComfyUI + AnimateDiff
+# 用于「电影级3D动画（皮克斯感）」风格化
+
+# =============================================================================
+# S1: 保守风格 (Conservative Enhancement)
+# =============================================================================
+# 目标：保留3D原始质感，仅微调光影和材质细节，闪烁风险最低
+# 适用场景：客户要求高保真度、多角色复杂场景、首次测试
+
+S1_conservative:
+  # 风格描述
+  description: "保守风格 - 轻微增强光影材质，最大化保留原始动作"
+
+  # Prompt模板（正向）
+  positive_prompt: |
+    (masterpiece, best quality, high resolution),
+    3D animated character, Pixar style, warm color palette,
+    soft studio lighting, family-friendly, clean textures,
+    smooth skin, detailed eyes, subtle rim lighting,
+    cinematic composition, professional 3D rendering,
+    Disney-Pixar aesthetic, gentle shadows,
+    vibrant but natural colors, appealing character design
+
+  # Negative Prompt（负向）
+  negative_prompt: |
+    (worst quality, low quality, normal quality),
+    lowres, blurry, out of focus, motion blur, noise, grain,
+    flickering, inconsistent lighting, uncanny valley,
+    scary, horror, creepy, distorted face, malformed,
+    extra limbs, bad anatomy, watermark, signature,
+    oversaturated, unrealistic proportions, jarring colors
+
+  # 核心参数
+  parameters:
+    # KSampler参数
+    denoise: 0.40  # 范围：0.35-0.45
+    cfg_scale: 7.0  # 范围：6.5-7.5
+    steps: 20  # 范围：20-22
+    sampler: "DPM++ 2M Karras"
+    scheduler: "karras"
+    seed: -1  # -1表示随机，固定seed用于一致性
+
+    # AnimateDiff参数
+    context_length: 16  # 针对16GB VRAM的安全值
+    context_schedule: "uniform"  # 最稳定的调度方式
+    context_overlap: 4
+    closed_loop: false
+
+    # ControlNet参数
+    controlnet_configs:
+      depth:
+        enabled: true
+        weight: 0.80  # 范围：0.75-0.85
+        start_percent: 0.0
+        end_percent: 1.0
+      softedge:
+        enabled: false  # S1风格可选，默认关闭降低复杂度
+        weight: 0.55
+        start_percent: 0.0
+        end_percent: 1.0
+
+    # IP-Adapter参数（L1基础方案）
+    ipadapter_configs:
+      faceid:
+        enabled: false  # L1不使用IP-Adapter
+        weight: 0.55
+      plus:
+        enabled: false
+        weight: 0.50
+
+    # FreeU参数
+    freeu:
+      enabled: true
+      b1: 1.1
+      b2: 1.2
+      s1: 0.9
+      s2: 0.2
+
+    # VAE Tiling（根据分辨率自动调整）
+    vae_tiling:
+      enabled_threshold: 768  # >=768分辨率时启用
+      tile_size: 512
+      overlap: 64
+
+  # 推荐Base Model
+  recommended_models:
+    base_checkpoint: "DreamShaper_8_pruned.safetensors"
+    motion_module: "mm_sd_v15_v2.ckpt"  # v2更稳定
+
+  # VRAM预估（3秒/72帧）
+  vram_estimates:
+    512x288: "6-7GB"
+    768x432: "9-10GB"
+    1024x576: "12-13GB"
+    1280x720: "14-15GB"
+
+# =============================================================================
+# S2: 中等风格 (Balanced Artistic)
+# =============================================================================
+# 目标：明显的电影级光影升级，增强材质细节和氛围感，可接受轻微闪烁
+# 适用场景：追求电影品质、单主角或双主角、可接受后期修正
+
+S2_balanced:
+  description: "中等风格 - 电影级光影升级，明显的艺术化处理"
+
+  positive_prompt: |
+    (masterpiece, best quality, ultra high resolution, 8k),
+    cinematic 3D animation, Pixar-DreamWorks fusion style,
+    dramatic three-point lighting, rim light, volumetric lighting,
+    golden hour ambience, warm color grading,
+    subsurface scattering on skin, detailed fabric textures,
+    professional color correction, bokeh background,
+    film grain (subtle), cinematic depth of field,
+    appealing and expressive character,
+    polished CG rendering, Unreal Engine quality
+
+  negative_prompt: |
+    (worst quality, low quality), jpeg artifacts, compression,
+    severe flickering, frame inconsistency, lighting jump cuts,
+    uncanny valley, horror elements, grotesque,
+    distorted anatomy, extra fingers, mutated hands,
+    poorly drawn face, blurry eyes, flat lighting,
+    washed out colors, overexposed, underexposed,
+    amateur 3D, low poly, jagged edges
+
+  parameters:
+    denoise: 0.60  # 范围：0.55-0.65
+    cfg_scale: 9.0  # 范围：8-10
+    steps: 26  # 范围：25-28
+    sampler: "DPM++ SDE Karras"
+    scheduler: "karras"
+    seed: -1
+
+    context_length: 16  # 768x432及以下可用24
+    context_schedule: "uniform"  # 或 "view_number" 节省VRAM
+    context_overlap: 4
+    closed_loop: false
+
+    controlnet_configs:
+      depth:
+        enabled: true
+        weight: 0.65  # 范围：0.6-0.7，降低约束增加生成自由度
+        start_percent: 0.0
+        end_percent: 1.0
+      softedge:
+        enabled: true  # S2推荐启用双ControlNet
+        weight: 0.45  # 范围：0.4-0.5
+        start_percent: 0.0
+        end_percent: 1.0
+
+    ipadapter_configs:
+      faceid:
+        enabled: true  # L2方案必需
+        weight: 0.70  # 范围：0.65-0.75
+      plus:
+        enabled: true
+        weight: 0.60  # 范围：0.55-0.65
+
+    freeu:
+      enabled: true
+      b1: 1.2
+      b2: 1.3
+      s1: 0.9
+      s2: 0.2
+
+    vae_tiling:
+      enabled_threshold: 768
+      tile_size: 512
+      overlap: 128  # 增加overlap提升质量
+
+  recommended_models:
+    base_checkpoint: "DreamShaper_8_pruned.safetensors"  # 或 "Deliberate_v2.safetensors"
+    motion_module: "mm_sd_v15_v3.ckpt"  # v3运动更流畅
+
+  vram_estimates:
+    512x288: "7-8GB"
+    768x432: "11-12GB"  # 因为使用IP-Adapter
+    1024x576: "14-15GB"
+    1280x720: "15.5-15.9GB (建议使用两阶段放大策略)"
+
+  # 参考图要求（L2方案）
+  reference_images:
+    faceid_required: 2  # 至少2张正脸特写
+    plus_required: 3  # 至少3张全身照（正/侧/45度）
+    resolution_min: "512x512"
+    format: "PNG/JPG"
+
+# =============================================================================
+# S3: 强烈风格 (Aggressive Cinematic)
+# =============================================================================
+# 目标：极致电影感，强烈的艺术化处理，材质光影完全重构，需后期稳定化
+# 适用场景：艺术短片、概念验证、单主角特写镜头、可接受大量后期
+
+S3_aggressive:
+  description: "强烈风格 - 极致电影感，大幅艺术化重构"
+
+  positive_prompt: |
+    (masterpiece, award-winning, ultra high quality, photorealistic 3D),
+    Disney-Pixar feature film quality, IMAX cinematic lighting,
+    complex multi-layer lighting setup, god rays, caustics,
+    advanced subsurface scattering, micro-details on skin pores,
+    fabric weave textures, realistic hair strands,
+    cinematic color science, film emulation LUT,
+    dramatic chiaroscuro, atmospheric haze, lens flare (subtle),
+    professional VFX compositing, Unreal Engine 5 Lumen,
+    path-traced global illumination,
+    emotionally expressive character performance
+
+  negative_prompt: |
+    (low quality, worst quality, amateur),
+    strong flickering, severe frame inconsistency,
+    lighting strobing, temporal artifacts,
+    uncanny valley effect, horror, nightmare fuel,
+    anatomical disasters, mutated features,
+    bad CGI, PS2 graphics, clay-like skin,
+    plastic sheen, oversmoothed, airbrushed,
+    color banding, posterization, oversharpen,
+    artificial-looking, unrealistic physics
+
+  parameters:
+    denoise: 0.75  # 范围：0.7-0.8（极限值）
+    cfg_scale: 11.5  # 范围：10-13
+    steps: 32  # 范围：30-35
+    sampler: "DPM++ SDE Karras"  # 或 "Euler a"
+    scheduler: "karras"
+    seed: -1
+
+    context_length: 12  # 降低以腾出VRAM给IP-Adapter
+    context_schedule: "view_number"  # 节省30-40% VRAM
+    context_overlap: 6
+    closed_loop: false
+
+    controlnet_configs:
+      depth:
+        enabled: true
+        weight: 0.55  # 范围：0.5-0.6，更低约束
+        start_percent: 0.0
+        end_percent: 1.0
+      softedge:
+        enabled: true
+        weight: 0.35  # 范围：0.3-0.4
+        start_percent: 0.0
+        end_percent: 1.0
+
+    ipadapter_configs:
+      faceid:
+        enabled: true
+        weight: 0.80  # 范围：0.75-0.85，强锁定
+      plus:
+        enabled: true
+        weight: 0.75  # 范围：0.7-0.8
+
+    freeu:
+      enabled: true
+      b1: 1.3  # 更强的细节增强
+      b2: 1.4
+      s1: 0.85
+      s2: 0.15
+
+    vae_tiling:
+      enabled_threshold: 768
+      tile_size: 640  # 更大tile保质量
+      overlap: 128
+
+  recommended_models:
+    base_checkpoint: "Deliberate_v2.safetensors"  # 更电影感的模型
+    motion_module: "mm_sd_v15_v3.ckpt"
+
+  vram_estimates:
+    512x288: "8-9GB"
+    768x432: "12-13GB"
+    1024x576: "15-15.8GB"
+    1280x720: "VRAM不足 - 必须使用两阶段放大策略"
+
+  reference_images:
+    faceid_required: 3  # 至少3张不同表情的正脸
+    plus_required: 5  # 5张多角度全身照（正/侧/背/45度左右）
+    resolution_min: "768x768"  # 更高质量要求
+    format: "PNG"
+
+  # 后期处理建议
+  post_processing:
+    temporal_smoothing:
+      enabled: true
+      method: "Topaz Video AI 或 AE Temporal Smoothing"
+      window_size: "3-5帧"
+    deflicker:
+      enabled: true
+      plugin: "AE/Premiere Deflicker"
+    color_grading:
+      enabled: true
+      method: "DaVinci Resolve 或 AE Lumetri"
+    interpolation:
+      enabled: false  # 可选：24fps→48fps→24fps平滑
+      method: "RIFE 或 FILM"
+
+# =============================================================================
+# 全局配置
+# =============================================================================
+global_config:
+  # 输出设置
+  output:
+    format: "mp4"
+    codec: "h264"
+    quality: "high"
+    fps: 24
+    bitrate: "8M"  # 1280x720推荐8Mbps
+
+  # 批次处理
+  batch:
+    parallel_jobs: 1  # 16GB VRAM只建议单任务
+    queue_mode: "sequential"
+    auto_retry: true
+    retry_count: 2
+
+  # VRAM管理
+  vram:
+    target_device: "cuda:0"
+    empty_cache_after_each: true
+    enable_attention_slicing: true
+    enable_vae_slicing: true
+
+  # 日志
+  logging:
+    level: "INFO"
+    save_to_file: true
+    log_dir: "./logs"
+    include_vram_stats: true
+
+# =============================================================================
+# 角色一致性方案配置
+# =============================================================================
+
+# L1: 基础方案（Prompt + Seed）
+character_consistency_L1:
+  method: "prompt_seed"
+  description: "使用固定Seed和详细角色prompt模板"
+
+  # 角色描述模板（需根据实际角色修改）
+  character_template: |
+    young girl, long brown hair in ponytail, blue eyes,
+    red hoodie with white stripes, denim jeans, sneakers,
+    friendly smile, approachable expression
+
+  # 一致性策略
+  consistency:
+    fixed_seed: true  # 所有片段使用相同seed
+    seed_value: 42  # 可修改为任意数字
+    low_denoise: true
+    denoise_max: 0.50  # 不超过0.5
+
+    # Negative Prompt强化
+    negative_append: |
+      different hairstyle, different clothing, different hair color,
+      color inconsistency, style inconsistency, character change
+
+  vram_overhead: "+0GB"
+  适用场景: "VRAM紧张、简单角色设计、单片段短视频"
+
+# L2: 高级方案（IP-Adapter）
+character_consistency_L2:
+  method: "ip_adapter"
+  description: "使用IP-Adapter-FaceID和Plus锁定角色特征"
+
+  # 参考图配置
+  reference_setup:
+    faceid_images:
+      count: 3
+      description: "3张512x512正脸特写（中性、微笑、惊讶表情）"
+      path: "./reference_images/character_face_*.png"
+      preprocessing: "crop_face_center"
+
+    plus_images:
+      count: 4
+      description: "4张768x768全身照（正面、侧面、背面、45度角）"
+      path: "./reference_images/character_full_*.png"
+      preprocessing: "center_crop"
+
+  # IP-Adapter权重策略
+  weights:
+    faceid:
+      S1_weight: 0.60
+      S2_weight: 0.70
+      S3_weight: 0.80
+    plus:
+      S1_weight: 0.55
+      S2_weight: 0.60
+      S3_weight: 0.75
+
+  # 注意事项
+  notes:
+    - "所有参考图必须是同一角色"
+    - "光照条件尽量统一"
+    - "使用用户提供的AI生成高质量角色图"
+    - "避免过度写实导致恐怖谷效应"
+
+  vram_overhead: "+3.5-4.5GB"
+  适用场景: "多片段项目、固定主角IP、追求专业级一致性"
+
+# L2可选: LoRA训练方案
+character_consistency_L2_lora:
+  method: "custom_lora"
+  description: "为特定角色训练专用LoRA"
+
+  training:
+    dataset_size: "20-30张高质量AI生成角色图"
+    resolution: "512x512"
+    epochs: 20
+    learning_rate: 0.0001
+    tool: "Kohya_ss"
+    estimated_time: "30-60分钟 (RTX 5080)"
+
+  usage:
+    lora_weight: 0.80  # 范围：0.7-0.9
+    combined_with_prompt: true
+    combined_with_ipadapter: false  # 二选一，避免过度约束
+
+  vram_overhead: "+0.5GB"
+  适用场景: "终极一致性要求、长期项目、可学习特定动作风格"
+
+# =============================================================================
+# 分辨率与Context对照表
+# =============================================================================
+resolution_context_table:
+  "512x288":
+    context_recommended: 24
+    context_safe: 32
+    context_aggressive: 48
+    batch_size: 4
+    vae_tiling_needed: false
+
+  "768x432":
+    context_recommended: 16
+    context_safe: 24
+    context_aggressive: 32
+    batch_size: 2
+    vae_tiling_needed: true
+
+  "1024x576":
+    context_recommended: 16
+    context_safe: 16
+    context_aggressive: 24
+    batch_size: 1
+    vae_tiling_needed: true
+
+  "1280x720":
+    context_recommended: 12
+    context_safe: 16
+    context_aggressive: 16
+    batch_size: 1
+    vae_tiling_needed: true
+    note: "推荐使用两阶段放大策略（768x432生成→1280x720放大）"
+
+# =============================================================================
+# MVP实施路径
+# =============================================================================
+mvp_roadmap:
+  stage_1:
+    name: "512x288基础验证"
+    resolution: "512x288"
+    fps: 12
+    duration: "3秒"
+    style: "S1"
+    vram: "5-7GB"
+    expected_time: "2-3分钟"
+    goal: "验证完整pipeline可运行"
+
+  stage_2:
+    name: "768x432中等质量"
+    resolution: "768x432"
+    fps: 16
+    duration: "3-4秒"
+    style: "S2"
+    vram: "10-12GB"
+    expected_time: "4-6分钟"
+    goal: "测试IP-Adapter和角色一致性"
+
+  stage_3:
+    name: "1024x576高质量预演"
+    resolution: "1024x576"
+    fps: "16-20"
+    duration: "3-5秒"
+    style: "S2/S3"
+    vram: "13-15GB"
+    expected_time: "6-10分钟"
+    goal: "压力测试VRAM管理"
+
+  stage_4:
+    name: "1280x720最终输出"
+    resolution: "1280x720"
+    fps: 24
+    duration: "3-5秒"
+    style: "S2"
+    vram: "路径B: 10-11GB + 8-9GB"
+    expected_time: "9分钟"
+    goal: "达成最终输出要求"
+    strategy: "两阶段放大（推荐）或直接生成（VRAM紧张）"

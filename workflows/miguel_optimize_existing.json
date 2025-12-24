@@ -1,0 +1,63 @@
+{
+  "1": {
+    "inputs": {
+      "video": "miguel_svd_00001.mp4",
+      "force_rate": 0,
+      "custom_width": 0,
+      "custom_height": 0,
+      "frame_load_cap": 0,
+      "skip_first_frames": 0,
+      "select_every_nth": 1
+    },
+    "class_type": "VHS_LoadVideo",
+    "_meta": {
+      "title": "Load Base Video (25 frames, 6fps)"
+    }
+  },
+  "2": {
+    "inputs": {
+      "ckpt_name": "rife47.pth",
+      "frames": ["1", 0],
+      "clear_cache_after_n_frames": 10,
+      "multiplier": 5,
+      "fast_mode": true,
+      "ensemble": true,
+      "scale_factor": 1.0
+    },
+    "class_type": "RIFE VFI",
+    "_meta": {
+      "title": "RIFE Interpolation: 6fps → 30fps (125 frames)"
+    }
+  },
+  "3": {
+    "inputs": {
+      "width": 1920,
+      "height": 1080,
+      "upscale_method": "lanczos",
+      "crop": "disabled",
+      "image": ["2", 0]
+    },
+    "class_type": "ImageScale",
+    "_meta": {
+      "title": "Upscale to 1920x1080 Full HD"
+    }
+  },
+  "4": {
+    "inputs": {
+      "frame_rate": 30,
+      "loop_count": 0,
+      "filename_prefix": "miguel_optimized",
+      "format": "video/h264-mp4",
+      "pix_fmt": "yuv420p",
+      "crf": 15,
+      "save_metadata": true,
+      "pingpong": false,
+      "save_output": true,
+      "images": ["3", 0]
+    },
+    "class_type": "VHS_VideoCombine",
+    "_meta": {
+      "title": "Save Optimized Video (30fps, 1080p)"
+    }
+  }
+}

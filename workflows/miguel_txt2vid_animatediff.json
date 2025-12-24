@@ -1,0 +1,159 @@
+{
+  "1": {
+    "inputs": {
+      "ckpt_name": "sd_xl_base_1.0.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": {
+      "title": "Load SDXL Base"
+    }
+  },
+  "2": {
+    "inputs": {
+      "lora_name": "BEST_miguel_lora_sdxl.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": ["1", 0],
+      "clip": ["1", 1]
+    },
+    "class_type": "LoraLoader",
+    "_meta": {
+      "title": "Miguel LoRA"
+    }
+  },
+  "3": {
+    "inputs": {
+      "text": "miguel rivera, young boy, walking forward, smiling, happy expression, detailed face, high quality animation, smooth motion, vibrant colors, cinematic lighting, 3d character, masterpiece",
+      "clip": ["2", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Positive: Miguel walking"
+    }
+  },
+  "4": {
+    "inputs": {
+      "text": "low quality, blurry, distorted, deformed, bad anatomy, ugly, static, still image, flickering, flicker, jittering, jitter, inconsistent, unstable, shaky, noisy, grainy, artifacts, compression artifacts, temporal inconsistency, frame inconsistency, watermark, text, worst quality, bad quality",
+      "clip": ["2", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Negative: Anti-Flicker Strong"
+    }
+  },
+  "5": {
+    "inputs": {
+      "width": 512,
+      "height": 512,
+      "batch_size": 32
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": {
+      "title": "Empty Latent (32 frames = 1.07s @ 30fps)"
+    }
+  },
+  "6": {
+    "inputs": {
+      "model_name": "animatediff-sdxl-beta/diffusion_pytorch_model.safetensors"
+    },
+    "class_type": "ADE_LoadAnimateDiffModel",
+    "_meta": {
+      "title": "AnimateDiff SDXL"
+    }
+  },
+  "7": {
+    "inputs": {
+      "motion_model": ["6", 0],
+      "start_percent": 0.0,
+      "end_percent": 1.0
+    },
+    "class_type": "ADE_ApplyAnimateDiffModel",
+    "_meta": {
+      "title": "Apply Motion"
+    }
+  },
+  "8": {
+    "inputs": {
+      "context_length": 16,
+      "context_stride": 1,
+      "context_overlap": 12,
+      "closed_loop": false,
+      "fuse_method": "pyramid"
+    },
+    "class_type": "ADE_StandardUniformContextOptions",
+    "_meta": {
+      "title": "Context: 16 frames, 12 overlap (anti-flicker)"
+    }
+  },
+  "9": {
+    "inputs": {
+      "model": ["2", 0],
+      "beta_schedule": "sqrt_linear (AnimateDiff)",
+      "m_models": ["7", 0],
+      "context_options": ["8", 0]
+    },
+    "class_type": "ADE_UseEvolvedSampling",
+    "_meta": {
+      "title": "Evolved Sampling"
+    }
+  },
+  "10": {
+    "inputs": {
+      "seed": 777666555,
+      "steps": 35,
+      "cfg": 6.5,
+      "sampler_name": "euler",
+      "scheduler": "karras",
+      "denoise": 1.0,
+      "model": ["9", 0],
+      "positive": ["3", 0],
+      "negative": ["4", 0],
+      "latent_image": ["5", 0]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler: Anti-Flicker (steps 35, cfg 6.5)"
+    }
+  },
+  "11": {
+    "inputs": {
+      "samples": ["10", 0],
+      "vae": ["1", 2]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "12": {
+    "inputs": {
+      "width": 768,
+      "height": 768,
+      "upscale_method": "lanczos",
+      "crop": "disabled",
+      "image": ["11", 0]
+    },
+    "class_type": "ImageScale",
+    "_meta": {
+      "title": "Upscale 768x768"
+    }
+  },
+  "13": {
+    "inputs": {
+      "frame_rate": 30,
+      "loop_count": 0,
+      "filename_prefix": "miguel_txt2vid",
+      "format": "video/h264-mp4",
+      "pix_fmt": "yuv420p",
+      "crf": 18,
+      "save_metadata": true,
+      "pingpong": false,
+      "save_output": true,
+      "images": ["12", 0]
+    },
+    "class_type": "VHS_VideoCombine",
+    "_meta": {
+      "title": "Save Video"
+    }
+  }
+}
