@@ -4,7 +4,9 @@
 import requests
 import json
 
-url = "http://127.0.0.1:8188"
+from vgf_paths import comfyui_url
+
+url = comfyui_url()
 
 print("測試 1: 檢查系統狀態...")
 try:

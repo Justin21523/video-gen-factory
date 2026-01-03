@@ -4,9 +4,12 @@
 import json
 import requests
 import time
+import os
+
+from vgf_paths import comfyui_url, workflow_path
 
 # 載入生成的 workflow
-with open('/mnt/c/ai_projects/video-gen-factory/workflows/generated_test_api.json', 'r') as f:
+with open(workflow_path("generated_test_api.json"), 'r', encoding='utf-8') as f:
     workflow = json.load(f)
 
 print("提交 Miguel 視頻生成 workflow...")
@@ -21,7 +24,7 @@ payload = {
     "client_id": "miguel_test"
 }
 
-response = requests.post("http://127.0.0.1:8188/prompt", json=payload)
+response = requests.post(f"{comfyui_url()}/prompt", json=payload)
 
 print(f"\nHTTP 狀態碼: {response.status_code}")
 
@@ -41,7 +44,7 @@ if response.status_code == 200:
 
         while True:
             try:
-                queue_response = requests.get("http://127.0.0.1:8188/queue")
+                queue_response = requests.get(f"{comfyui_url()}/queue")
                 queue = queue_response.json()
 
                 running = queue.get('queue_running', [])
@@ -62,8 +65,9 @@ if response.status_code == 200:
                     # 檢查輸出檔案
                     print("\n檢查輸出檔案...")
                     import subprocess
+                    output_dir = os.environ.get("COMFYUI_OUTPUT_DIR", "/mnt/c/ai_tools/comfyui/output")
                     result = subprocess.run(
-                        ['ls', '-lht', '/mnt/c/ai_tools/comfyui/output/miguel_dancing_test*.mp4'],
+                        ['ls', '-lht', f'{output_dir}/miguel_dancing_test*.mp4'],
                         capture_output=True,
                         text=True
                     )

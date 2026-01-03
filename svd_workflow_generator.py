@@ -6,6 +6,8 @@ import copy
 from pathlib import Path
 from typing import Dict, Any, Optional
 
+from vgf_paths import workflow_path
+
 
 class SVDWorkflowGenerator:
     """SVD workflow 生成器"""
@@ -13,7 +15,7 @@ class SVDWorkflowGenerator:
     def __init__(self, template_path: str = None):
         """初始化並載入 SVD 模板"""
         if template_path is None:
-            template_path = '/mnt/c/ai_projects/video-gen-factory/workflows/svd_template.json'
+            template_path = str(workflow_path("svd_template.json"))
 
         with open(template_path, 'r', encoding='utf-8') as f:
             self.template = json.load(f)
@@ -100,7 +102,7 @@ def main():
     )
 
     # 保存
-    output_path = '/mnt/c/ai_projects/video-gen-factory/workflows/svd_test_workflow.json'
+    output_path = str(workflow_path("svd_test_workflow.json"))
     generator.save_workflow(workflow, output_path)
 
     print("\n📊 SVD Workflow 參數說明:")

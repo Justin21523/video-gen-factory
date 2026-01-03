@@ -8,20 +8,18 @@ import json
 import requests
 import time
 import sys
-import os
+import argparse
 from pathlib import Path
 
-# ComfyUI API 配置
-COMFYUI_URL = "http://localhost:8188"
-WORKFLOW_PATH = "/mnt/c/ai_projects/video-gen-factory/workflows/miguel_animatediff_final.json"
-OUTPUT_DIR = "/mnt/c/ai_projects/video-gen-factory/output_videos"
+from vgf_paths import LEGACY_VGF_ROOT, comfyui_url, output_dir, project_root, rewrite_paths, workflow_path
 
 def load_workflow():
     """加载 workflow JSON 文件"""
     print("📂 加载 Workflow...")
-    with open(WORKFLOW_PATH, 'r') as f:
+    with open(workflow_path(args.workflow), 'r', encoding='utf-8') as f:
         workflow = json.load(f)
-    print(f"✅ Workflow 已加载: {Path(WORKFLOW_PATH).name}")
+    workflow = rewrite_paths(workflow, {LEGACY_VGF_ROOT: str(project_root())})
+    print(f"✅ Workflow 已加载: {Path(args.workflow).name}")
     return workflow
 
 def queue_prompt(workflow):
@@ -34,7 +32,7 @@ def queue_prompt(workflow):
     }
 
     try:
-        response = requests.post(f"{COMFYUI_URL}/prompt", json=payload)
+        response = requests.post(f"{comfyui_url()}/prompt", json=payload)
         response.raise_for_status()
         result = response.json()
         prompt_id = result.get('prompt_id')
@@ -51,7 +49,7 @@ def queue_prompt(workflow):
 def get_queue_status():
     """获取队列状态"""
     try:
-        response = requests.get(f"{COMFYUI_URL}/queue")
+        response = requests.get(f"{comfyui_url()}/queue")
         response.raise_for_status()
         return response.json()
     except:
@@ -60,7 +58,7 @@ def get_queue_status():
 def get_history(prompt_id):
     """获取任务历史"""
     try:
-        response = requests.get(f"{COMFYUI_URL}/history/{prompt_id}")
+        response = requests.get(f"{comfyui_url()}/history/{prompt_id}")
         response.raise_for_status()
         return response.json()
     except:
@@ -95,7 +93,8 @@ def monitor_progress(prompt_id):
                 if history and prompt_id in history:
                     elapsed = time.time() - start_time
                     print(f"\n✅ 生成完成! 耗时: {elapsed:.1f} 秒")
-                    print(f"📁 输出位置: {OUTPUT_DIR}")
+                    print(f"📁 输出位置 (本项目): {output_dir()}")
+                    print("📁 输出位置 (ComfyUI 默认): $COMFYUI_OUTPUT_DIR 或 /mnt/c/ai_tools/comfyui/output")
                     return True
                 status = "⏳ 等待中..."
 
@@ -110,7 +109,7 @@ def check_comfyui_running():
     """检查 ComfyUI 是否运行"""
     print("🔍 检查 ComfyUI 服务器状态...")
     try:
-        response = requests.get(f"{COMFYUI_URL}/system_stats", timeout=5)
+        response = requests.get(f"{comfyui_url()}/system_stats", timeout=5)
         response.raise_for_status()
         stats = response.json()
 
@@ -159,14 +158,21 @@ def main():
         print("=" * 60)
         print("\n下一步:")
         print("1. 查看输出视频:")
-        print(f"   {OUTPUT_DIR}/miguel_pixar_sdxl_*.mp4")
+        print(f"   {output_dir()}/miguel_*.mp4")
         print("\n2. 如果需要调整参数, 修改 workflow 文件:")
-        print(f"   {WORKFLOW_PATH}")
+        print(f"   {workflow_path(args.workflow)}")
         print("\n3. 再次运行此脚本生成新视频:")
-        print("   python run_generation.py")
+        print(f"   python {Path(__file__).name} --workflow {args.workflow}")
 
 if __name__ == "__main__":
     try:
+        parser = argparse.ArgumentParser(description="Submit a ComfyUI workflow and monitor progress.")
+        parser.add_argument(
+            "--workflow",
+            default="miguel_animatediff_complete.json",
+            help="Workflow JSON filename under workflows/ (or an absolute path).",
+        )
+        args = parser.parse_args()
         main()
     except KeyboardInterrupt:
         print("\n\n⚠️  用户中断")

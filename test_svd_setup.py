@@ -6,12 +6,14 @@ import sys
 import requests
 from pathlib import Path
 
+from vgf_paths import comfyui_url, project_root
+
 
 def test_comfyui_connection():
     """測試 ComfyUI 連接"""
     print("\n1️⃣  測試 ComfyUI 連接...")
     try:
-        response = requests.get("http://127.0.0.1:8188/system_stats", timeout=5)
+        response = requests.get(f"{comfyui_url()}/system_stats", timeout=5)
         if response.status_code == 200:
             stats = response.json()
             print("   ✅ ComfyUI 連接成功")
@@ -30,10 +32,11 @@ def test_comfyui_connection():
 def test_svd_model():
     """檢查 SVD 模型是否存在"""
     print("\n2️⃣  檢查 SVD 模型...")
+    comfyui_root = os.environ.get("COMFYUI_ROOT", "/mnt/c/ai_tools/comfyui")
     model_paths = [
-        "/mnt/c/ai_tools/comfyui/models/checkpoints/svd_xt_1_1.safetensors",
-        "/mnt/c/ai_tools/comfyui/models/checkpoints/svd_xt.safetensors",
-        "/mnt/c/ai_tools/comfyui/models/checkpoints/svd.safetensors"
+        f"{comfyui_root}/models/checkpoints/svd_xt_1_1.safetensors",
+        f"{comfyui_root}/models/checkpoints/svd_xt.safetensors",
+        f"{comfyui_root}/models/checkpoints/svd.safetensors"
     ]
 
     for model_path in model_paths:
@@ -116,10 +119,12 @@ def test_workflow_generator():
 def test_directories():
     """檢查必要的目錄"""
     print("\n5️⃣  檢查必要目錄...")
+    comfyui_input = os.environ.get("COMFYUI_INPUT_DIR", "/mnt/c/ai_tools/comfyui/input")
+    comfyui_output = os.environ.get("COMFYUI_OUTPUT_DIR", "/mnt/c/ai_tools/comfyui/output")
     dirs_to_check = {
-        'ComfyUI input': '/mnt/c/ai_tools/comfyui/input',
-        'ComfyUI output': '/mnt/c/ai_tools/comfyui/output',
-        'Workflow templates': '/mnt/c/ai_projects/video-gen-factory/workflows'
+        'ComfyUI input': comfyui_input,
+        'ComfyUI output': comfyui_output,
+        'Workflow templates': str(project_root() / 'workflows')
     }
 
     all_exist = True

@@ -19,14 +19,15 @@ import sys
 from pathlib import Path
 from typing import List, Dict, Any
 from workflow_generator import WorkflowGenerator
+from vgf_paths import LEGACY_VGF_ROOT, comfyui_url as default_comfyui_url, project_root, rewrite_paths, workflow_path
 
 
 class BatchGenerator:
-    def __init__(self, comfyui_url: str = "http://127.0.0.1:8188"):
-        self.comfyui_url = comfyui_url
+    def __init__(self, comfyui_url: str | None = None):
+        self.comfyui_url = comfyui_url or default_comfyui_url()
         self.client_id = "batch-video-generator"
         self.generator = WorkflowGenerator(
-            template_path='/mnt/c/ai_projects/video-gen-factory/workflows/miguel_cogvideox_base.json'
+            template_path=str(workflow_path("miguel_cogvideox_base.json"))
         )
 
     def load_character_config(self, config_path: str) -> Dict[str, Any]:
@@ -36,13 +37,14 @@ class BatchGenerator:
 
     def queue_workflow(self, workflow: Dict[str, Any]) -> str:
         """提交 workflow 到 ComfyUI"""
+        workflow = rewrite_paths(workflow, {LEGACY_VGF_ROOT: str(project_root())})
         payload = {
             "prompt": workflow,
             "client_id": self.client_id
         }
 
         # Debug: 儲存 workflow 用於檢查
-        debug_path = "/mnt/c/ai_projects/video-gen-factory/workflows/debug_last_submit.json"
+        debug_path = workflow_path("debug_last_submit.json")
         with open(debug_path, 'w', encoding='utf-8') as f:
             json.dump(payload, f, indent=2)
 
@@ -158,14 +160,14 @@ class BatchGenerator:
         dry_run: bool = False
     ):
         """生成單個角色的所有（或指定）場景"""
-        config_path = f"/mnt/c/ai_projects/video-gen-factory/characters/{character_name}.yaml"
+        config_path = project_root() / "characters" / f"{character_name}.yaml"
 
-        if not Path(config_path).exists():
+        if not config_path.exists():
             print(f"❌ 找不到角色配置: {config_path}")
             return
 
         print(f"\n📋 載入角色配置: {character_name}")
-        config = self.load_character_config(config_path)
+        config = self.load_character_config(str(config_path))
 
         scenes = config['character']['scenes']
 
@@ -209,7 +211,7 @@ class BatchGenerator:
 
     def generate_all(self, dry_run: bool = False):
         """生成所有角色的所有場景"""
-        characters_dir = Path("/mnt/c/ai_projects/video-gen-factory/characters")
+        characters_dir = project_root() / "characters"
         config_files = list(characters_dir.glob("*.yaml"))
 
         print(f"\n📋 找到 {len(config_files)} 個角色配置")
@@ -256,8 +258,8 @@ def main():
 
     parser.add_argument(
         '--url',
-        default='http://127.0.0.1:8188',
-        help='ComfyUI 服務地址 (預設: http://127.0.0.1:8188)'
+        default=default_comfyui_url(),
+        help='ComfyUI 服務地址 (預設: $COMFYUI_URL)'
     )
 
     args = parser.parse_args()

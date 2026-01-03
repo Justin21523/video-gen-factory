@@ -6,6 +6,8 @@ import copy
 from pathlib import Path
 from typing import Dict, Any, Optional
 
+from vgf_paths import workflow_path
+
 
 class SVDEnhancedGenerator:
     """SVD 增強版 workflow 生成器（包含幀插值和放大）"""
@@ -13,7 +15,7 @@ class SVDEnhancedGenerator:
     def __init__(self, template_path: str = None):
         """初始化並載入增強版模板"""
         if template_path is None:
-            template_path = '/mnt/c/ai_projects/video-gen-factory/workflows/svd_enhanced_template.json'
+            template_path = str(workflow_path("svd_enhanced_template.json"))
 
         with open(template_path, 'r', encoding='utf-8') as f:
             self.template = json.load(f)
@@ -210,7 +212,7 @@ def main():
     )
     generator.save_workflow(
         workflow_full,
-        '/mnt/c/ai_projects/video-gen-factory/workflows/svd_full_enhanced.json'
+        str(workflow_path("svd_full_enhanced.json"))
     )
     print(f"   節點數: {len(workflow_full)}")
     print(f"   流程: SVD → RIFE (2x) → Real-ESRGAN (4x) → 輸出")
@@ -227,7 +229,7 @@ def main():
     )
     generator.save_workflow(
         workflow_interp,
-        '/mnt/c/ai_projects/video-gen-factory/workflows/svd_interp_only.json'
+        str(workflow_path("svd_interp_only.json"))
     )
     print(f"   節點數: {len(workflow_interp)}")
     print(f"   流程: SVD → RIFE (3x) → 輸出")
@@ -244,7 +246,7 @@ def main():
     )
     generator.save_workflow(
         workflow_upscale,
-        '/mnt/c/ai_projects/video-gen-factory/workflows/svd_upscale_only.json'
+        str(workflow_path("svd_upscale_only.json"))
     )
     print(f"   節點數: {len(workflow_upscale)}")
     print(f"   流程: SVD → Real-ESRGAN (2x) → 輸出")

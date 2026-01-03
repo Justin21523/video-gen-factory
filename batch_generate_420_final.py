@@ -14,6 +14,8 @@ import json
 from pathlib import Path
 from typing import List, Dict
 
+from vgf_paths import project_root
+
 # 设置AI_WAREHOUSE 3.0规范的环境变量
 os.environ['HF_HOME'] = '/mnt/c/ai_cache/huggingface'
 os.environ['TRANSFORMERS_CACHE'] = '/mnt/c/ai_cache/huggingface'
@@ -92,7 +94,7 @@ class BatchVideoGenerator420:
 
         cmd = [
             'python',
-            '/mnt/c/ai_projects/video-gen-factory/svd_pure_python.py',
+            str(project_root() / 'svd_pure_python.py'),
             '--input', input_image,
             '--output', output_path,
             '--motion', str(self.motion_bucket_id),
@@ -129,7 +131,7 @@ class BatchVideoGenerator420:
 
         cmd = [
             'python',
-            '/mnt/c/ai_projects/video-gen-factory/video_upscale_realesrgan_simple.py',
+            str(project_root() / 'video_upscale_realesrgan_simple.py'),
             '--input', input_video,
             '--output', output_video,
             '--model-type', 'anime',

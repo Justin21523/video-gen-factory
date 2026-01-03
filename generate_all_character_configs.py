@@ -8,6 +8,7 @@ import os
 import glob
 import yaml
 from pathlib import Path
+from vgf_paths import project_root
 
 
 # 角色資訊字典（基於 Pixar 電影角色）
@@ -164,7 +165,7 @@ def generate_character_config(character_name: str, data_dir: str) -> dict:
             'lora_path': info['lora'],
             'lora_strength': 0.8,
             'reference_images': ref_images if ref_images else [
-                f'/mnt/c/ai_projects/video-gen-factory/input/{character_name}_ref.png'
+                str(project_root() / "reference_images" / f"{character_name}_ref.png")
             ],
             'base_description': info['description'],
             'base_negative': BASE_NEGATIVE,
@@ -188,7 +189,7 @@ def generate_character_config(character_name: str, data_dir: str) -> dict:
 
 def main():
     data_dir = '/mnt/data/ai_data/synthetic_lora_data/generated_data'
-    output_dir = '/mnt/c/ai_projects/video-gen-factory/characters'
+    output_dir = str(project_root() / "characters")
 
     # 確保輸出目錄存在
     os.makedirs(output_dir, exist_ok=True)

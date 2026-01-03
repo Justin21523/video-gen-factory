@@ -4,32 +4,47 @@
 import requests
 import json
 
+from vgf_paths import comfyui_url, workflow_path
+
 # 載入生成的 workflow
-with open('/mnt/c/ai_projects/video-gen-factory/workflows/debug_last_submit.json', 'r') as f:
+with open(workflow_path("debug_last_submit.json"), 'r', encoding='utf-8') as f:
     data = json.load(f)
 
-workflow = data['prompt']
+workflow = data.get('prompt', data)
 
-# 嘗試驗證每個節點
 print("檢查 workflow 結構...")
-print(f"節點數量: {len(workflow['nodes'])}")
-print(f"連結數量: {len(workflow['links'])}")
 
-# 檢查每個節點的必要欄位
-for node in workflow['nodes']:
-    node_id = node.get('id')
-    node_type = node.get('type')
-    print(f"\n節點 {node_id}: {node_type}")
+if isinstance(workflow, dict) and 'nodes' in workflow and 'links' in workflow:
+    # UI workflow 格式
+    print(f"格式: UI workflow")
+    print(f"節點數量: {len(workflow.get('nodes', []))}")
+    print(f"連結數量: {len(workflow.get('links', []))}")
 
-    # 檢查是否有 widgets_values
-    if 'widgets_values' in node:
-        print(f"  widgets_values: {node['widgets_values']}")
+    for node in workflow.get('nodes', []):
+        node_id = node.get('id')
+        node_type = node.get('type')
+        print(f"\n節點 {node_id}: {node_type}")
 
-    # 檢查輸入連結
-    if 'inputs' in node:
-        for inp in node['inputs']:
-            if inp.get('link') is not None:
-                print(f"  輸入: {inp['name']} <- link {inp['link']}")
+        if 'widgets_values' in node:
+            print(f"  widgets_values: {node['widgets_values']}")
+
+        if 'inputs' in node:
+            for inp in node['inputs']:
+                if inp.get('link') is not None:
+                    print(f"  輸入: {inp['name']} <- link {inp['link']}")
+elif isinstance(workflow, dict):
+    # API workflow 格式 (node_id -> {class_type, inputs})
+    print("格式: API workflow")
+    print(f"節點數量: {len(workflow)}")
+    for node_id, node in sorted(workflow.items(), key=lambda kv: int(kv[0]) if str(kv[0]).isdigit() else str(kv[0])):
+        class_type = node.get('class_type')
+        inputs = node.get('inputs', {})
+        print(f"\n節點 {node_id}: {class_type}")
+        if isinstance(inputs, dict) and inputs:
+            keys = ", ".join(sorted(inputs.keys()))
+            print(f"  inputs: {keys}")
+else:
+    print("⚠️  無法辨識 workflow 格式")
 
 # 嘗試使用 ComfyUI API 驗證
 print("\n" + "="*60)
@@ -43,7 +58,7 @@ payload = {
 
 try:
     response = requests.post(
-        "http://127.0.0.1:8188/prompt",
+        f"{comfyui_url()}/prompt",
         json=payload,
         headers={"Content-Type": "application/json"}
     )

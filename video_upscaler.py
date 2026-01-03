@@ -8,20 +8,25 @@ import time
 import shutil
 from pathlib import Path
 
+from vgf_paths import comfyui_url as default_comfyui_url, workflow_path
+
 
 class VideoUpscaler:
     """視頻放大器"""
 
     def __init__(
         self,
-        comfyui_url: str = "http://127.0.0.1:8188",
-        template_path: str = "/mnt/c/ai_projects/video-gen-factory/workflows/video_upscale_template.json",
-        comfyui_input_dir: str = "/mnt/c/ai_tools/comfyui/input"
+        comfyui_url: str | None = None,
+        template_path: str | None = None,
+        comfyui_input_dir: str | None = None,
+        comfyui_output_dir: str | None = None,
     ):
-        self.comfyui_url = comfyui_url
-        self.comfyui_input_dir = comfyui_input_dir
+        self.comfyui_url = (comfyui_url or default_comfyui_url()).rstrip("/")
+        self.comfyui_input_dir = comfyui_input_dir or os.environ.get("COMFYUI_INPUT_DIR", "/mnt/c/ai_tools/comfyui/input")
+        self.output_dir = comfyui_output_dir or os.environ.get("COMFYUI_OUTPUT_DIR", "/mnt/c/ai_tools/comfyui/output")
 
-        with open(template_path, 'r') as f:
+        template = workflow_path(template_path or "video_upscale_template.json")
+        with open(template, 'r', encoding='utf-8') as f:
             self.template = json.load(f)
 
         print(f"✓ 載入視頻放大 workflow 模板")

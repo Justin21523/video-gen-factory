@@ -215,8 +215,10 @@ class WorkflowGenerator:
 
 if __name__ == '__main__':
     # 測試範例
+    from vgf_paths import workflow_path
+
     generator = WorkflowGenerator(
-        template_path='/mnt/c/ai_projects/video-gen-factory/workflows/miguel_cogvideox_base.json'
+        template_path=str(workflow_path("miguel_cogvideox_base.json"))
     )
 
     workflow = generator.generate_workflow(
@@ -233,6 +235,6 @@ if __name__ == '__main__':
 
     generator.save_workflow(
         workflow,
-        '/mnt/c/ai_projects/video-gen-factory/workflows/generated_test_api.json'
+        str(workflow_path("generated_test_api.json"))
     )
     print("\n✓ 測試完成！")

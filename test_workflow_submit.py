@@ -4,8 +4,10 @@
 import json
 import requests
 
+from vgf_paths import comfyui_url, workflow_path
+
 # 讀取原始 workflow
-with open('/mnt/c/ai_projects/video-gen-factory/workflows/miguel_cogvideox_base.json', 'r') as f:
+with open(workflow_path("miguel_cogvideox_base.json"), 'r', encoding='utf-8') as f:
     workflow = json.load(f)
 
 # 提交到 ComfyUI
@@ -15,7 +17,7 @@ payload = {
 }
 
 print("提交 workflow 到 ComfyUI...")
-response = requests.post("http://127.0.0.1:8188/prompt", json=payload)
+response = requests.post(f"{comfyui_url()}/prompt", json=payload)
 
 print(f"Status code: {response.status_code}")
 print(f"Response: {response.text[:1000]}")
