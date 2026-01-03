@@ -1,5 +1,7 @@
 # 🎬 Video Generation Factory
 
+> 注意：此目录已整合进 `ai-gen-hub`。默认使用 `${AI_HUB_ROOT}/video-gen-factory`（可通过环境变量 `VIDEO_FACTORY_ROOT` 覆盖）。
+
 > 使用 ComfyUI + AnimateDiff 将 3D 动画逐帧图片转换为 AI 风格化短视频
 >
 > **目标风格**：电影级 3D 动画（皮克斯感）- 温暖、家庭向、高品质
